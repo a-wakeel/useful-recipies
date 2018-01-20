@@ -48,7 +48,7 @@ def get_data():
     try:
         user_agent = UserAgent()
         headers = {'User-Agent': user_agent.random}
-        res = requests.get('https://api.kucoin.com/v1/market/open/symbols', headers=headers)
+        res = requests.get('https://api.binance.com/api/v1/ticker/24hr', headers=headers)
 
         if res.status_code == requests.codes.ok:
             return res.json()
@@ -64,10 +64,12 @@ def parse_data(data):
     :param data: jason data, dict data
     :return: string
     """
-    parsed_data = "Market Name  :  % Vol Difference"
+    parsed_data = "Market Name  :  % BidQty Difference  :  % AskQty Difference"
     string_list = [parsed_data]
     for item in data:
-        data_str = "\n{market_name}  :  {diff}".format(market_name=item['MarketName'], diff=item['Difference'])
+        data_str = "\n{market_name}  :  {bid_diff}  :  {ask_diff}".format(
+            market_name=item['MarketName'], bid_diff=item['bidQtyDifference'], 
+            ask_diff=item['askQtyDifference'])
         string_list.append(data_str)
 
     parsed_data = " ".join(string_list)
@@ -84,14 +86,18 @@ def main():
         updated_market_data = get_data()
 
         data_count = 0
-        while data_count < len(market_data['data']):
-            latest_vol_value = updated_market_data['data'][data_count]['volValue']
-            previous_vol_value = market_data['data'][data_count]['volValue']
-            vol_difference = ((latest_vol_value - previous_vol_value)/previous_vol_value)*100
+        while data_count < len(market_data):
+            latest_bid_qty = updated_market_data[data_count]['bidQty']
+            latest_ask_qty = updated_market_data[data_count]['askQty']
+            previous_bid_qty = market_data[data_count]['bidQty']
+            previous_ask_qty = market_data[data_count]['askQty']
+            
+            bid_qty_difference = ((latest_bid_qty - previous_bid_qty)/previous_bid_qty)*100
+            ask_qty_difference = ((latest_ask_qty - previous_ask_qty)/previous_ask_qty)*100
 
-            if vol_difference >= RATE_DIFFERENCE:
-                result = {'MarketName': updated_market_data['data'][data_count]['symbol'],
-                          'Difference': vol_difference}
+            if bid_qty_difference >= RATE_DIFFERENCE or ask_qty_difference >= RATE_DIFFERENCE:
+                result = {'MarketName': updated_market_data[data_count]['symbol'],
+                          'bidQtyDifference': bid_qty_difference, 'askQtyDifference': ask_qty_difference}
                 current_data.append(result)
             data_count += 1
 

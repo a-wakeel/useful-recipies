@@ -4,7 +4,7 @@ import smtplib
 from fake_useragent import UserAgent
 
 FETCH_INTERVAL = 60  # interval of data being fetch from api
-RATE_DIFFERENCE = 10  # percent difference between open buy orders
+RATE_DIFFERENCE = 1  # percent difference between open buy orders
 USER_EMAIL = 'user@email.com'  # your account email id here
 USER_PASS = 'password'  # your account password (new generated pass in-case of two factor auth account)
 RECIPT_EMAIL = ['mail1@mail.com', 'mail2@mail.com']  # recipients emails, add more in list
@@ -48,7 +48,7 @@ def get_data():
     try:
         user_agent = UserAgent()
         headers = {'User-Agent': user_agent.random}
-        res = requests.get('https://api.binance.com/api/v1/ticker/24hr', headers=headers)
+        res = requests.get('https://api.hitbtc.com/api/2/public/ticker', headers=headers)
 
         if res.status_code == requests.codes.ok:
             return res.json()
@@ -64,12 +64,10 @@ def parse_data(data):
     :param data: jason data, dict data
     :return: string
     """
-    parsed_data = "Market Name  :  % BidQty Difference  :  % AskQty Difference"
+    parsed_data = "Market Name  :  % Vol Difference"
     string_list = [parsed_data]
     for item in data:
-        data_str = "\n{market_name}  :  {bid_diff}  :  {ask_diff}".format(
-            market_name=item['MarketName'], bid_diff=item['bidQtyDifference'], 
-            ask_diff=item['askQtyDifference'])
+        data_str = "\n{market_name}  :  {diff}".format(market_name=item['MarketName'], diff=item['Difference'])
         string_list.append(data_str)
 
     parsed_data = " ".join(string_list)
@@ -87,22 +85,18 @@ def main():
 
         data_count = 0
         while data_count < len(market_data):
-            latest_bid_qty = updated_market_data[data_count]['bidQty']
-            latest_ask_qty = updated_market_data[data_count]['askQty']
-            previous_bid_qty = market_data[data_count]['bidQty']
-            previous_ask_qty = market_data[data_count]['askQty']
-            
-            bid_qty_difference = ((latest_bid_qty - previous_bid_qty)/previous_bid_qty)*100
-            ask_qty_difference = ((latest_ask_qty - previous_ask_qty)/previous_ask_qty)*100
+            latest_vol_value = updated_market_data[data_count]['volume']
+            previous_vol_value = market_data[data_count]['volume']
+            vol_difference = ((latest_vol_value - previous_vol_value)/previous_vol_value)*100
 
-            if bid_qty_difference >= RATE_DIFFERENCE or ask_qty_difference >= RATE_DIFFERENCE:
+            if vol_difference >= RATE_DIFFERENCE:
                 result = {'MarketName': updated_market_data[data_count]['symbol'],
-                          'bidQtyDifference': bid_qty_difference, 'askQtyDifference': ask_qty_difference}
+                          'Difference': vol_difference}
                 current_data.append(result)
             data_count += 1
 
         if len(current_data) > 0:
-            send_mail(USER_EMAIL, USER_PASS, RECIPT_EMAIL, 'BINANCE Markets Differences', parse_data(current_data))
+            send_mail(USER_EMAIL, USER_PASS, RECIPT_EMAIL, 'HIT-BTC Markets Differences', parse_data(current_data))
 
 
 if __name__ == '__main__':

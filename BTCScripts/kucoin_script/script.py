@@ -96,7 +96,7 @@ def main():
             data_count += 1
 
         if len(current_data) > 0:
-            send_mail(USER_EMAIL, USER_PASS, RECIPT_EMAIL, 'BTC Markets Differences', parse_data(current_data))
+            send_mail(USER_EMAIL, USER_PASS, RECIPT_EMAIL, 'KUCOIN Markets Differences', parse_data(current_data))
 
 
 if __name__ == '__main__':

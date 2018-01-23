@@ -44,7 +44,7 @@ def get_data():
     Get markets data from the api in json format
     :return: return market summary data in json format
     """
-    print('* getting data from bittrex')
+    print('* getting data from binance')
     try:
         user_agent = UserAgent()
         headers = {'User-Agent': user_agent.random}
@@ -91,14 +91,23 @@ def main():
             latest_ask_qty = updated_market_data[data_count]['askQty']
             previous_bid_qty = market_data[data_count]['bidQty']
             previous_ask_qty = market_data[data_count]['askQty']
-            
-            bid_qty_difference = ((latest_bid_qty - previous_bid_qty)/previous_bid_qty)*100
-            ask_qty_difference = ((latest_ask_qty - previous_ask_qty)/previous_ask_qty)*100
 
-            if bid_qty_difference >= RATE_DIFFERENCE or ask_qty_difference >= RATE_DIFFERENCE:
-                result = {'MarketName': updated_market_data[data_count]['symbol'],
-                          'bidQtyDifference': bid_qty_difference, 'askQtyDifference': ask_qty_difference}
-                current_data.append(result)
+            print(latest_ask_qty)
+            print(latest_bid_qty)
+            print(previous_ask_qty)
+            print(previous_bid_qty)
+            print('\n\n')
+            
+            try:
+                bid_qty_difference = ((float(latest_bid_qty) - float(previous_bid_qty))/float(previous_bid_qty))*100
+                ask_qty_difference = ((float(latest_ask_qty) - float(previous_ask_qty))/float(previous_ask_qty))*100
+
+                if bid_qty_difference >= RATE_DIFFERENCE or ask_qty_difference >= RATE_DIFFERENCE:
+                    result = {'MarketName': updated_market_data[data_count]['symbol'],
+                              'bidQtyDifference': bid_qty_difference, 'askQtyDifference': ask_qty_difference}
+                    current_data.append(result)
+            except Exception as e:
+                print(e.message) 
             data_count += 1
 
         if len(current_data) > 0:

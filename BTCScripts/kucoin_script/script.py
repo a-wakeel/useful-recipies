@@ -44,7 +44,7 @@ def get_data():
     Get markets data from the api in json format
     :return: return market summary data in json format
     """
-    print('* getting data from bittrex')
+    print('* getting data from kucoin')
     try:
         user_agent = UserAgent()
         headers = {'User-Agent': user_agent.random}
@@ -87,12 +87,16 @@ def main():
         while data_count < len(market_data['data']):
             latest_vol_value = updated_market_data['data'][data_count]['volValue']
             previous_vol_value = market_data['data'][data_count]['volValue']
-            vol_difference = ((latest_vol_value - previous_vol_value)/previous_vol_value)*100
+            
+            try:
+                vol_difference = ((latest_vol_value - previous_vol_value)/previous_vol_value)*100
 
-            if vol_difference >= RATE_DIFFERENCE:
-                result = {'MarketName': updated_market_data['data'][data_count]['symbol'],
-                          'Difference': vol_difference}
-                current_data.append(result)
+                if vol_difference >= RATE_DIFFERENCE:
+                    result = {'MarketName': updated_market_data['data'][data_count]['symbol'],
+                              'Difference': vol_difference}
+                    current_data.append(result)
+            except Exception as e:
+                print(e.message)
             data_count += 1
 
         if len(current_data) > 0:

@@ -89,7 +89,7 @@ def main():
             previous_vol_value = market_data['data'][data_count]['volValue']
             
             try:
-                vol_difference = ((latest_vol_value - previous_vol_value)/previous_vol_value)*100
+                vol_difference = ((float(latest_vol_value) - float(previous_vol_value))/float(previous_vol_value))*100
 
                 if vol_difference >= RATE_DIFFERENCE:
                     result = {'MarketName': updated_market_data['data'][data_count]['symbol'],
